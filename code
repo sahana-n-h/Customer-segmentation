@@ -1,0 +1,87 @@
+#load the data
+customer_data = read.csv(file.choose())
+str(customer_data)
+#column names
+names(customer_data)
+#visualize data #display the first six rows of our dataset using the head() function and use the
+summary()
+head(customer_data)
+#quick summary of data
+summary(customer_data)
+#some statistical value of features
+sd(customer_data$Age)
+sd(customer_data$Annual.Income..k..)
+sd(customer_data$Spending.Score..1.100.)
+IQR(customer_data$Age)
+IQR(customer_data$Annual.Income..k..)
+IQR(customer_data$Spending.Score..1.100.)
+#Pie chart to show the gender distribution across the customer_data dataset
+pct=round(a/sum(a)*100)
+lbs=paste(c(&quot;Female&quot;,&quot;Male&quot;),&quot; &quot;,pct,&quot;%&quot;,sep=&quot; &quot;)
+library(plotrix)
+pie3D(a,labels=lbs,
+main=&quot;Pie Chart Depicting Ratio of Female and Male&quot;)
+#Age distribution
+#boxplot
+boxplot(customer_data$Age,
+col=&quot;#4169E1&quot;,
+main=&quot;Boxplot for Descriptive Analysis of Age&quot;)
+#max customer ages are between 30 and 35.
+#The minimum age of customers is 18, whereas, the maximum age is 70.
+#income
+summary(customer_data$Annual.Income..k..)
+#histogram
+hist(customer_data$Annual.Income..k..,
+col=&quot;green&quot;,
+main=&quot;Histogram for Annual Income&quot;,
+xlab=&quot;Annual Income Class&quot;,
+ylab=&quot;Frequency&quot;,
+labels=TRUE) #Min = 15 max = 137
+#Spending score
+#boxplot
+boxplot(customer_data$Spending.Score..1.100.,
+col=&quot;#4169E1&quot;,
+main=&quot;Boxplot for Descriptive Analysis of Spending score&quot;,horizontal = TRUE)
+#min = 1 max=99 avg = 50
+#k-means clustering
+#elbow method
+library(purrr)
+set.seed(123)
+# function to calculate total intra-cluster sum of square
+iss &lt;- function(k) {
+k means(customer_data[,3:5],k,iter.max=100,nstart=100,algorithm=&quot;Lloyd&quot; )$tot.withinss
+}
+k.values &lt;- 1:10
+iss_values &lt;- map_dbl(k.values, iss)
+plot(k.values, iss_values,
+type=&quot;b&quot;, pch = 19, frame = FALSE,
+xlab=&quot;Number of clusters K&quot;,
+ylab=&quot;Total intra-clusters sum of squares&quot;) #4 clusters
+# fviz_nbclust() func to determine and visualize the optimal number of clusters.
+library(NbClust)
+library(factoextra)
+fviz_nbclust(customer_data[,3:5], kmeans, method = &quot;silhouette&quot;)
+
+#gap statistic method
+set.seed(123)
+stat_gap &lt;-cluster::clusGap(customer_data[,3:5], FUN = kmeans, nstart = 25,
+
+K.max = 10, B = 50)
+fviz_gap_stat(stat_gap) #go with the 6
+# taking k =6 as optimal cluster
+k6&lt;-kmeans(customer_data[,3:5],6,iter.max=100,nstart=50,algorithm=&quot;Lloyd&quot;)
+k6
+#Visualizing the Clustering Results using the First Two Principle Components
+pcclust=prcomp(customer_data[,3:5],scale=FALSE) #principal component analysis
+summary(pcclust)
+pcclust$rotation[,1:2]
+#visualize the clusters
+set.seed(1)
+ggplot2(customer_data, aes(x =Annual.Income..k.., y = Spending.Score..1.100.)) +
+geom_point(stat = &quot;identity&quot;, aes(color = as.factor(k6$cluster))) +
+scale_color_discrete(name=&quot; &quot;,
+
+breaks=c(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;,&quot;6&quot;),
+labels=c(&quot;Cluster 1&quot;, &quot;Cluster 2&quot;, &quot;Cluster 3&quot;, &quot;Cluster 4&quot;, &quot;Cluster 5&quot;,&quot;Cluster 6&quot;)) +
+
+ggtitle(&quot;Segments of Mall Customers&quot;, subtitle = &quot;Using K-means Clustering&quot;)
